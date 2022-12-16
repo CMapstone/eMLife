@@ -1,0 +1,42 @@
+
+def PrepareDataforBaseModel(ImageDataFolderLocation):        
+    #ImageDataFolderLocation is the path for the folder containing images to be prepared for the model. These should all in be in subfolders named '0' and '1' for negative and positive samples respectively
+    imagesin = ImageDataGenerator(preprocessing_function=tf.keras.applications.mobilenet.preprocess_input) \
+    .flow_from_directory(directory=ImageDataFolderLocation, target_size=(224,224), classes=['0', '1'], batch_size=10,shuffle=False )
+        
+    return imagesin
+
+def PrepareDataForTopModelWithTL(imagesin, TransferModel):
+    #Uses MobileNetV2 and a previously trained transfer model to prepare high level features to be used as inputs to the outcome predictor models.
+    #The extra transfer learning step was found to be useful for the PN and 4 cell stages
+    #imagesin should be image data in the format produced by the PrepareDataforBaseModel function
+
+    y=imagesin.classes
+    Y = tf.keras.utils.to_categorical(y, 2)
+
+    mobile =  tf.keras.applications.MobileNetV2()    
+    x=mobile.layers[-2].output
+    model = Model(inputs=mobile.input, outputs=x)
+    convx=model.predict(imagesin)
+    
+    topmodel=load_model(TransferModel)
+    layer_name = 'dense'
+    intermediate_layer_model = keras.Model(inputs=topmodel.input,
+                                       outputs=topmodel.get_layer(layer_name).output)
+    X = intermediate_layer_model.predict(convx)
+           
+    return X, Y
+
+def PrepareDataForTopModel(imagesin):
+    #Uses MobileNetV2 to prepare high level features to be used as inputs to the transfer models and the outcome predictor models without extra transfer learning.
+    #imagesin should be image data in the format produced by the PrepareDataforBaseModel function
+
+    y=imagesin.classes
+    Y = tf.keras.utils.to_categorical(y, 2)
+
+    mobile =  tf.keras.applications.MobileNetV2()    
+    x=mobile.layers[-2].output
+    model = Model(inputs=mobile.input, outputs=x)
+    X=model.predict(imagesin)
+           
+    return X, Y

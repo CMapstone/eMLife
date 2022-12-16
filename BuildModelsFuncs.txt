@@ -1,0 +1,39 @@
+def BuildTransferModel(num_classes,number_hidden_units):
+    
+    model = tf.keras.Sequential()
+    model.add(keras.layers.Dropout(0.5))
+    model.add(keras.layers.Dense(number_hidden_units, activation="relu", input_shape=(1280,)))
+    prediction_layer = keras.layers.Dense(num_classes, activation='softmax')
+    model.add(prediction_layer)
+    model.compile(optimizer=tf.keras.optimizers.RMSprop(lr=0.0001),
+                  loss=tf.keras.losses.CategoricalCrossentropy(from_logits=True),
+                  metrics=['accuracy'])
+    return model
+
+def BuildOutputPredictorWithTL(BLR,drop,number_hidden_units):
+    #Builds and compiles an output predictor model that takes in high level features from a transfer model as input
+    #number_hidden_units is the number of hidden units in the transfer model.
+    prediction_layer = keras.layers.Dense(2, activation='softmax', input_shape=(number_hidden_units,))
+    model = tf.keras.Sequential()
+    if drop>0:
+        model.add(keras.layers.Dropout(drop))
+    model.add(prediction_layer)
+    base_learning_rate = BLR
+    model.compile(optimizer=tf.keras.optimizers.RMSprop(lr=base_learning_rate),
+                  loss=tf.keras.losses.BinaryCrossentropy(from_logits=True),
+                  metrics=['accuracy'])
+    return model
+
+def BuildOutputPredictor(BLR,drop):
+    #Builds and compiles an output predictor model that takes in high level features from MobileNetV2 as input
+    
+    prediction_layer = keras.layers.Dense(2, activation='softmax', input_shape=(1280,))
+    model = tf.keras.Sequential()
+    if drop>0:
+        model.add(keras.layers.Dropout(drop))
+    model.add(prediction_layer)
+    base_learning_rate = BLR
+    model.compile(optimizer=tf.keras.optimizers.RMSprop(lr=base_learning_rate),
+                  loss=tf.keras.losses.BinaryCrossentropy(from_logits=True),
+                  metrics=['accuracy'])
+    return model
