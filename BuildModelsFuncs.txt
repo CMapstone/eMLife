@@ -1,5 +1,5 @@
 def BuildTransferModel(num_classes,number_hidden_units):
-    #Builds and compiles the model used later for transfer learning which takes in high level features from MobileNetV2 as input
+    #Builds and compiles the model used later for transfer learning which takes in high level features from MobileNetV2 as input.
     
     model = tf.keras.Sequential()
     model.add(keras.layers.Dropout(0.5))
@@ -12,7 +12,7 @@ def BuildTransferModel(num_classes,number_hidden_units):
     return model
 
 def BuildOutputPredictorWithTL(BLR,drop,number_hidden_units):
-    #Builds and compiles an output predictor model that takes in high level features from a transfer model as input
+    #Builds and compiles an output predictor model that takes in high level features from a transfer model as input.
     #number_hidden_units is the number of hidden units in the transfer model.
     
     prediction_layer = keras.layers.Dense(2, activation='softmax', input_shape=(number_hidden_units,))
@@ -27,7 +27,7 @@ def BuildOutputPredictorWithTL(BLR,drop,number_hidden_units):
     return model
 
 def BuildOutputPredictor(BLR,drop):
-    #Builds and compiles an output predictor model that takes in high level features from MobileNetV2 as input
+    #Builds and compiles an output predictor model that takes in high level features from MobileNetV2 as input.
     
     prediction_layer = keras.layers.Dense(2, activation='softmax', input_shape=(1280,))
     model = tf.keras.Sequential()
