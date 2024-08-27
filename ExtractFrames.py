@@ -7,8 +7,7 @@ keras = tf.keras
 import numpy as np
 from tensorflow.keras.models import load_model
 
-#load the model we have trained to read the timestamp. It should work for EmbryoScope and Embryoscope plus videos, another model may need to be trained for videos from other timelapse systems
-model = load_model("Preprocessing/dig2.h5")
+
 #this function reads the timestamp. It should work for EmbryoScope and Embryoscope plus videos, it will need to be adjusted for videos from other timelapse systems
 def gettime(frame,model):
     imgsize=28
@@ -121,6 +120,9 @@ def gettime(frame,model):
 
 
 def extract_frames_main(config):
+
+    #load the model we have trained to read the timestamp. It should work for EmbryoScope and Embryoscope plus videos, another model may need to be trained for videos from other timelapse systems
+    model = load_model("Preprocessing/dig2.h5")
     #make output folders if they do not already exist
     stage = config['extract_frames']['stage']
     if not os.path.exists('Preprocessing/Outputs/'+stage):
@@ -137,17 +139,12 @@ def extract_frames_main(config):
     sh = pd.read_csv(AllNotes)
     for i in range(0,len(sh)):
         cell_value_class = sh['video name'][i]
-        cell_value_id = sh[stage][i] 
-        d[cell_value_class]=cell_value_id
+        d[cell_value_class]=sh[stage][i] 
         if cropping=='Y':
-            Xs = sh['Xstart'][i] 
-            Xe = sh['Xend'][i] 
-            Ys = sh['Ystart'][i] 
-            Ye = sh['Yend'][i] 
-            Xstart[cell_value_class] = Xs
-            Xend[cell_value_class]=Xe
-            Ystart[cell_value_class]=Ys
-            Yend[cell_value_class]=Ye
+            Xstart[cell_value_class] = sh['Xstart'][i] 
+            Xend[cell_value_class]=sh['Xend'][i] 
+            Ystart[cell_value_class]=sh['Ystart'][i] 
+            Yend[cell_value_class]=sh['Yend'][i] 
 
     #loop through every video in the input folder extracting all the output frames for this stage
     for file in os.listdir(os.fsencode(inputfolder)):
