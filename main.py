@@ -12,12 +12,12 @@ def read_config():
 
     return config
 
-def run_main(extract_frames, get_predictions):
+def run_main(extract_frames, get_predictions, config):
 
     extract_frames = '2'
 
     if extract_frames:
-        extract_frames_main()
+        extract_frames_main(config)
     
     if get_predictions:
         PrepareDataForModel()
@@ -30,5 +30,5 @@ if __name__=='__main__':
 
     extract_frames = True
     get_predictions= False
-    run_main(extract_frames, get_predictions)
+    run_main(extract_frames, get_predictions, config)
 
