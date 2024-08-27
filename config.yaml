@@ -1,0 +1,7 @@
+
+extract_frames:
+  # Link to the csv file with video names,key developmental timepoints and co-ordinates for cropping (optional), see template
+  AllNotes: Preprocessing/Annotations.csv'
+  # Folder of input videos
+  inputfolder: 'Preprocessing/Input videos'
+  outfolder_location: 'my_hardrive/video_files'
