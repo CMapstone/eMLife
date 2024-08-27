@@ -154,82 +154,60 @@ for i in range(0,len(sh)):
         Ystart[cell_value_class]=Ys
         Yend[cell_value_class]=Ye
 
-
-def get_key_time(frameNum, filename):
-    """
-    Get the time of the key moment frame
-    """
-    cap = cv2.VideoCapture(inputfolder+"/"+filename)
-    cap.set(1,int(frameNum)-1); 
-    ret, frame = cap.read() 
-    time_of_frame = gettime(frame, model)
-    keyeventtime = time_of_frame
-    return keyeventtime
-
-def process_frame(filename, frameNum):
-
-    keyeventtime = get_key_time(frameNum, filename)
-
-    #loop through all offsets
-    for i in offset:
-        timewanted=keyeventtime+i  
-
-        if i>0:
-            #find the first frame after the offset time 
-            while time_of_frame< timewanted:
-                frameNum=int(frameNum)+1
-                cap.set(1,int(frameNum)-1); # Where frame_no is the frame you want. having a -1 gives correct frame. change this to get an offset.
-                ret, frame = cap.read() # Read the frame
-                time_of_frame=gettime(frame, model)
-            #determine whether this frame or frame before/after is closest to the timepoint we want
-            cap.set(1,int(frameNum-2)); # Where frame_no is the frame you want. having a -1 gives correct frame. change this to get an offset.
-            ret, frame = cap.read() # Read the frame
-            time_other_frame=gettime(frame, model)
-            if time_of_frame-timewanted<timewanted-time_other_frame:
-                cap.set(1,int(frameNum)-1); # Where frame_no is the frame you want. having a -1 gives correct frame. change this to get an offset.
-            else:
-                cap.set(1,int(frameNum-2)); # Where frame_no is the frame you want. having a -1 gives correct frame. change this to get an offset.
+#loop through every video in the input folder extracting all the output frames for this stage
+for file in os.listdir(os.fsencode(inputfolder)):
+    filename = os.fsdecode(file)
+    frameNum= d[filename]   #need to make sure column 1 matches the actual name of the video file
+    if int(frameNum)>0:   #check frame number is non zero as when the key timepoint could not be determined a zero is entered into the csv
         
-        if i<0:
-            #find the first frame before the offset time 
-            while time_of_frame> timewanted:
-                frameNum=int(frameNum)-1
-                cap.set(1,int(frameNum)-1); # Where frame_no is the frame you want. having a -1 gives correct frame. change this to get an offset.
-                ret, frame = cap.read() # Read the frame
-                time_of_frame=gettime(frame, model)
-            #determine whether this frame or frame before/after is closest to the timepoint we want
-            cap.set(1,int(frameNum)); # Where frame_no is the frame you want. having a -1 gives correct frame. change this to get an offset.
-            ret, frame = cap.read() # Read the frame
-            time_other_frame=gettime(frame, model)
-            if timewanted-time_of_frame<time_other_frame-timewanted:
-                cap.set(1,int(frameNum)-1); # Where frame_no is the frame you want. having a -1 gives correct frame. change this to get an offset.
-            else:
-                cap.set(1,int(frameNum)); # Where frame_no is the frame you want. having a -1 gives correct frame. change this to get an offset.
-        
-        #save frame as image
+        #get the time of the key moment frame
+        cap = cv2.VideoCapture(inputfolder+"/"+filename)
+        cap.set(1,int(frameNum)-1); 
         ret, frame = cap.read() 
-        np_im = np. array(frame)
-        if cropping=='Y':
-            img = Image.fromarray(np_im[int(Ystart[filename]):int(Yend[filename]),int(Xstart[filename]):int(Xend[filename])])
-        if cropping=='N':
-            img=Image.fromarray(np_im)
-        img.save('Preprocessing/Outputs/'+stage+'/'+str(i)+"/"+str(filename)+'_'+str(frameNum)+ '.png') 
+        time_of_frame=gettime(frame, model)
+        keyeventtime=time_of_frame
 
-         
+        #loop through all offsets
+        for i in offset:
+            timewanted=keyeventtime+i  
 
-        
-    
-
-def iter_input_folder():
-    """
-    Loop through every video in the input folder extracting all the output frames for this stage
-    """
-    for file in os.listdir(os.fsencode(inputfolder)):
-        # Read in file
-        filename = os.fsdecode(file)
-        frameNum= d[filename]   # Need to make sure column 1 matches the actual name of the video file
-        if int(frameNum)>0:   # Check frame number is non zero as when the key timepoint could not be determined a zero is entered into the csv
-            process_frame(filename, frameNum)
-
-def extract_frames_main():
-    gettime()
+            if i>0:
+                #find the first frame after the offset time 
+                while time_of_frame< timewanted:
+                    frameNum=int(frameNum)+1
+                    cap.set(1,int(frameNum)-1); # Where frame_no is the frame you want. having a -1 gives correct frame. change this to get an offset.
+                    ret, frame = cap.read() # Read the frame
+                    time_of_frame=gettime(frame, model)
+                #determine whether this frame or frame before/after is closest to the timepoint we want
+                cap.set(1,int(frameNum-2)); # Where frame_no is the frame you want. having a -1 gives correct frame. change this to get an offset.
+                ret, frame = cap.read() # Read the frame
+                time_other_frame=gettime(frame, model)
+                if time_of_frame-timewanted<timewanted-time_other_frame:
+                    cap.set(1,int(frameNum)-1); # Where frame_no is the frame you want. having a -1 gives correct frame. change this to get an offset.
+                else:
+                    cap.set(1,int(frameNum-2)); # Where frame_no is the frame you want. having a -1 gives correct frame. change this to get an offset.
+            
+            if i<0:
+                #find the first frame before the offset time 
+                while time_of_frame> timewanted:
+                    frameNum=int(frameNum)-1
+                    cap.set(1,int(frameNum)-1); # Where frame_no is the frame you want. having a -1 gives correct frame. change this to get an offset.
+                    ret, frame = cap.read() # Read the frame
+                    time_of_frame=gettime(frame, model)
+                #determine whether this frame or frame before/after is closest to the timepoint we want
+                cap.set(1,int(frameNum)); # Where frame_no is the frame you want. having a -1 gives correct frame. change this to get an offset.
+                ret, frame = cap.read() # Read the frame
+                time_other_frame=gettime(frame, model)
+                if timewanted-time_of_frame<time_other_frame-timewanted:
+                    cap.set(1,int(frameNum)-1); # Where frame_no is the frame you want. having a -1 gives correct frame. change this to get an offset.
+                else:
+                    cap.set(1,int(frameNum)); # Where frame_no is the frame you want. having a -1 gives correct frame. change this to get an offset.
+            
+            #save frame as image
+            ret, frame = cap.read() 
+            np_im = np. array(frame)
+            if cropping=='Y':
+                img = Image.fromarray(np_im[int(Ystart[filename]):int(Yend[filename]),int(Xstart[filename]):int(Xend[filename])])
+            if cropping=='N':
+                img=Image.fromarray(np_im)
+            img.save('Preprocessing/Outputs/'+stage+'/'+str(i)+"/"+str(filename)+'_'+str(frameNum)+ '.png') 
