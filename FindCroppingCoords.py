@@ -17,22 +17,22 @@ def export_coords(circles,iterationdetails,circle_params,filename):
     circles = np.round(circles[0, :]).astype("int")
     X = circles
     #corrections for if circle goes outside of frame
-    Xstart=X[0][0]-circle_params[r]
-    Xend=X[0][0]+circle_params[r]
-    Ystart=X[0][1]-circle_params[r]
-    Yend=X[0][1]+circle_params[r]
+    Xstart=X[0][0]-circle_params['r']
+    Xend=X[0][0]+circle_params['r']
+    Ystart=X[0][1]-circle_params['r']
+    Yend=X[0][1]+circle_params['r']
     if Xstart<0:
         Xstart=0
-        Xend=2*circle_params[r]
+        Xend=2*circle_params['r']
     if Ystart<0:
         Ystart=0
-        Yend=2*circle_params[r]
-    if Xend>circle_params[edge]:
-        Xend=circle_params[edge]
-        Xstart=circle_params[edge]-(2*circle_params[r])     
-    if Yend>circle_params[edge]:
-        Yend=circle_params[edge]
-        Ystart=circle_params[edge]-(2*circle_params[r])
+        Yend=2*circle_params['r']
+    if Xend>circle_params['edge']:
+        Xend=circle_params['edge']
+        Xstart=circle_params['edge']-(2*circle_params['r'])     
+    if Yend>circle_params['edge']:
+        Yend=circle_params['edge']
+        Ystart=circle_params['edge']-(2*circle_params['r'])
     iterationdetails.append([filename,Yend,Ystart,Xend,Xstart])
 
 def draw_circles(circle_params,img_path):
@@ -43,8 +43,8 @@ def draw_circles(circle_params,img_path):
     img = cv2.imread(img_path,0) 
     img = cv2.medianBlur(img,5)
     cimg = cv2.cvtColor(img,cv2.COLOR_GRAY2BGR)
-    circles = cv2.HoughCircles(img,cv2.HOUGH_GRADIENT,1,circle_params[a],
-                            param1=circle_params[b],param2=circle_params[c],minRadius=circle_params[d],maxRadius=circle_params[e])
+    circles = cv2.HoughCircles(img,cv2.HOUGH_GRADIENT,1,circle_params['a'],
+                            param1=circle_params['b'],param2=circle_params['c'],minRadius=circle_params['d'],maxRadius=circle_params['e'])
     circles = np.uint16(np.around(circles))
     for i in circles[0,:]:
         # Draw the outer circle
@@ -134,7 +134,7 @@ def iter_videos(iterationdetails: list, cropping_input_folder: str) -> list:
         
     return iterationdetails
 
-def main(config):
+def find_cropping_coords_main(config):
     """
     #TODO add docstring
     """
