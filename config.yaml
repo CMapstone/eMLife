@@ -11,3 +11,6 @@ extract_frames:
   cropping:  'Y' 
   # The list of required offsets
   offset: '[0,-1,-2,-3,-4,-5,-6,-7,-8,-9,-10]' 
+find_cropping_coords:
+  # The folder with raw input videos
+  cropping_input_folder: 'C:/1. Incoming data/testvids'

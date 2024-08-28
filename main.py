@@ -14,7 +14,6 @@ def read_config():
 
 def run_main(extract_frames, get_predictions, config):
 
-    extract_frames = '2'
 
     if extract_frames:
         extract_frames_main(config)
