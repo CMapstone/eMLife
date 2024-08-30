@@ -7,117 +7,62 @@ keras = tf.keras
 import numpy as np
 from tensorflow.keras.models import load_model
 
+def read_digit(digit_coords, imgsize, frame, model):
+    """
+    Read the digit in a passed patch of an image using a pre-trained CNN.
+    """
+    digit = frame[digit_coords[0]:digit_coords[1],digit_coords[2]:digit_coords[3]] 
+    digit = Image.fromarray(digit)
+    digit = digit.resize((imgsize, imgsize, ))
+    digit = digit.convert('L')
+    digit = np. array(digit)
+    if digit[0,0]>100:
+        digit = digit.reshape(1, imgsize, imgsize, 1)
+        digit = digit/ 255
+        prediction = model.predict(digit)
+        Dig=prediction.argmax()
+    else:
+        Dig = 0.0
 
-#this function reads the timestamp. It should work for EmbryoScope and Embryoscope plus videos, it will need to be adjusted for videos from other timelapse systems
+    return Dig
+
+
 def gettime(frame,model):
+    """
+    This function reads the timestamp. It should work for EmbryoScope and Embryoscope 
+    plus videos, it will need to be adjusted for videos from other timelapse systems.
+    """
     imgsize=28
     
-    if len(frame)<601:
-        
-        digit1=frame[478:487,449:456] 
-        digit1 = Image.fromarray(digit1)
-        digit1=digit1.resize((imgsize, imgsize, ))
-        digit1= digit1.convert('L')
-        digit1 = np. array(digit1)
-        if digit1[0,0]>100:
-            digit1 = digit1.reshape(1, imgsize, imgsize, 1)
-            digit1 =digit1/ 255
-            prediction = model.predict(digit1)
-            Dig1=prediction.argmax()
-        else:
-            Dig1=0.0
+    # The coordinates of the timestamp vary depending on whether the frame is from an Embryoscope or EmbryoScope plus video
+    # EmbryoScope videos are 500x500 , EmbryoscopePlus videos are 800x800 pixels
+    if len(frame) == 500:
 
-        digit2=frame[478:487,456:463]
-        digit2 = Image.fromarray(digit2)
-        digit2=digit2.resize((imgsize, imgsize, ))
-        digit2= digit2.convert('L')
-        digit2 = np. array(digit2) 
-        if digit2[0,0]>100:
-            digit2 = digit2.reshape(1, imgsize, imgsize, 1)
-            digit2 =digit2/ 255
-            prediction = model.predict(digit2)
-            Dig2=prediction.argmax()
-        else:
-            Dig2=0.0
+        digit_coords = [478, 487, 449, 456]
+        digit1 = read_digit(digit_coords, imgsize, frame, model)
+        digit_coords = [478, 487, 456, 463]
+        digit2 = read_digit(digit_coords, imgsize, frame, model)
+        digit_coords = [478, 487, 463, 470]
+        digit3 = read_digit(digit_coords, imgsize, frame, model)
+        digit_coords = [478, 487, 473, 480]
+        digit4 = read_digit(digit_coords, imgsize, frame, model)
+    
+    if len(frame) == 800:
 
-        digit3=frame[478:487,463:470]
-        digit3 = Image.fromarray(digit3)
-        digit3=digit3.resize((imgsize, imgsize, ))
-        digit3= digit3.convert('L')
-        digit3 = np. array(digit3) 
-        digit3 = digit3.reshape(1, imgsize, imgsize, 1)
-        digit3 =digit3/ 255
-        prediction = model.predict(digit3)
-        Dig3=prediction.argmax()
+        digit_coords = [772, 786, 726, 737]
+        digit1 = read_digit(digit_coords, imgsize, frame, model)
+        digit_coords = [772, 786, 737, 748]
+        digit2 = read_digit(digit_coords, imgsize, frame, model)
+        digit_coords = [772, 786, 748, 759]
+        digit3 = read_digit(digit_coords, imgsize, frame, model)
+        digit_coords = [772, 786, 764, 775]
+        digit4 = read_digit(digit_coords, imgsize, frame, model)
 
-        digit4=frame[478:487,473:480]
-        digit4 = Image.fromarray(digit4)
-        digit4=digit4.resize((imgsize, imgsize, ))
-        digit4= digit4.convert('L')
-        digit4 = np. array(digit4) 
-        digit4 = digit4.reshape(1, imgsize, imgsize, 1)
-        digit4 =digit4/ 255
-        prediction = model.predict(digit4)
-        Dig4=prediction.argmax()
+    # Combine digits to get the time on the timestamp
+    time = digit1*100+digit2*10+digit3+digit4*0.1
 
-
-        time=Dig1*100+Dig2*10+Dig3+Dig4*0.1
-       
-        
-    if len(frame)>601:
-                
-        digit1=frame[772:786,726:737] 
-        digit1 = Image.fromarray(digit1)
-        digit1=digit1.resize((imgsize, imgsize, ))
-        digit1= digit1.convert('L')
-        digit1 = np. array(digit1)
-        if digit1[0,0]>100:
-            digit1 = digit1.reshape(1, imgsize, imgsize, 1)
-            digit1 =digit1/ 255
-            prediction = model.predict(digit1)
-            Dig1=prediction.argmax()
-        else:
-            Dig1=0.0
-
-        digit2=frame[772:786,737:748]
-        digit2 = Image.fromarray(digit2)
-        digit2=digit2.resize((imgsize, imgsize, ))
-        digit2= digit2.convert('L')
-        digit2 = np. array(digit2) 
-        if digit2[0,0]>100:
-            digit2 = digit2.reshape(1, imgsize, imgsize, 1)
-            digit2 =digit2/ 255
-            prediction = model.predict(digit2)
-            Dig2=prediction.argmax()
-        else:
-            Dig2=0.0
-
-        digit3=frame[772:786,748:759]
-        digit3 = Image.fromarray(digit3)
-        digit3=digit3.resize((imgsize, imgsize, ))
-        digit3= digit3.convert('L')
-        digit3 = np. array(digit3) 
-        digit3 = digit3.reshape(1, imgsize, imgsize, 1)
-        digit3 =digit3/ 255
-        prediction = model.predict(digit3)
-        Dig3=prediction.argmax()
-
-        digit4=frame[772:786,764:775]
-        digit4 = Image.fromarray(digit4)
-        digit4=digit4.resize((imgsize, imgsize, ))
-        digit4= digit4.convert('L')
-        digit4 = np. array(digit4) 
-        digit4 = digit4.reshape(1, imgsize, imgsize, 1)
-        digit4 =digit4/ 255
-        prediction = model.predict(digit4)
-        Dig4=prediction.argmax()
-
-
-        time=Dig1*100+Dig2*10+Dig3+Dig4*0.1
-       
     return time
-
-
+       
 
 def extract_frames_main(config):
 
@@ -125,6 +70,10 @@ def extract_frames_main(config):
     model = load_model("Preprocessing/dig2.h5")
     #make output folders if they do not already exist
     stage = config['extract_frames']['stage']
+    AllNotes = config['extract_frames']['AllNotes']
+    offset = config['extract_frames']['offset']
+    cropping = config['extract_frames']['cropping']
+    inputfolder = config['extract_frames']['inputfolder']
     if not os.path.exists('Preprocessing/Outputs/'+stage):
         os.makedirs('Preprocessing/Outputs/'+stage)
         for i in offset:
