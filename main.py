@@ -32,8 +32,8 @@ if __name__=='__main__':
 
     config = read_config()
 
-    find_cropping_coords = False
-    extract_frames = True
+    find_cropping_coords = True
+    extract_frames = False
     get_predictions= False
 
     run_main(extract_frames, get_predictions, find_cropping_coords, config)

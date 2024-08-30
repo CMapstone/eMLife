@@ -5,7 +5,7 @@ extract_frames:
   # Folder of input videos.
   input_folder: Preprocessing/Input videos
   # Folder you want output images to be saved in.
-  output_folder: Preprocessing/Outputs/
+  output_folder: C:/eMLifeOutputs/Preprocessing/Outputs/
   # The developmental stage you are interested in, make sure it matches a column heading in the Annotations csv file
   stage: 2 cell
   #if you want cropped images, 'N' if you do not want images to be cropped
@@ -17,7 +17,7 @@ find_cropping_coords:
   # The folder with raw input videos
   cropping_input_folder: 'C:/1. Incoming data/testvids'
   # The folder the output csv file will be saved in.
-  cropping_output_folder: 'Preprocessing/Outputs'
+  cropping_output_folder: 'C:/eMLifeOutputs/Preprocessing/Outputs'
   
 get_predictions:
   # Input folder containing the images to be used for predictions in the subfolders
@@ -25,4 +25,4 @@ get_predictions:
   # Set stage to be required developmental stage. This must match a subfolder in the input folder above
   stage: 2cell
   # Destination folder where you want the output csv files to be saved
-  output_folder: 'Results/'
+  output_folder: 'C:/eMLifeOutputs/Results/'
