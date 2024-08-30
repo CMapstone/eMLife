@@ -4,13 +4,13 @@ extract_frames:
   AllNotes: Preprocessing/Annotations.csv
   # Folder of input videos
   inputfolder: Preprocessing/Input videos
-  outfolder_location: my_hardrive/video_files
+  outputfolder: Preprocessing/Outputs/
   #The developmental stage you are interested in, make sure it matches a column heading in the Annotations csv file
-  stage: 2 cell 
+  stage: PN
   #if you want cropped images, 'N' if you do not want images to be cropped
   cropping:  'Y' 
   # The list of required offsets
-  offset: [0,1,2]
+  offset: [0,-1,-2]
 find_cropping_coords:
   # The folder with raw input videos
   cropping_input_folder: 'C:/1. Incoming data/testvids'
