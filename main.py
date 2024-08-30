@@ -2,7 +2,7 @@ from nbformat import read
 import yaml
 
 from ExtractFrames import extract_frames_main
-#from GettingPredictions import PrepareDataForModel
+from GettingPredictions import getting_predictions_main
 from FindCroppingCoords import find_cropping_coords_main
 
 
@@ -13,20 +13,19 @@ def read_config():
 
     return config
 
-def run_main(extract_frames, get_predictions, find_cropping_coords, config):
 
+def run_main(extract_frames, get_predictions, find_cropping_coords, config):
 
     if extract_frames:
         extract_frames_main(config)
     
-   # if get_predictions:
-    #    PrepareDataForModel()
+    if get_predictions:
+        getting_predictions_main(config)
     
     if find_cropping_coords:
         find_cropping_coords_main(config)
-
-
-
+    
+    return
 
 
 if __name__=='__main__':
