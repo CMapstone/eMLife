@@ -8,24 +8,24 @@ extract_frames:
   # Folder you want output images to be saved in.
   output_folder: C:/eMLifeOutputs/Preprocessing/Outputs/
   # The developmental stage you are interested in, make sure it matches a column heading in the 
-  # annotations csv file
-  stage: 2 cell
-  # Cropping option: 'Y' if you want cropped images, 'N' if you do not want images to be cropped
+  # annotations csv file.
+  stage: PN
+  # Cropping option: 'Y' if you want cropped images, 'N' if you do not want images to be cropped.
   cropping:  'Y' 
-  # The list of required offsets
-  offset: [0, 1, 2]
+  # The list of required offsets.
+  offset: [0, -1, -2]
 
 find_cropping_coords:
-  # The folder with raw input videos
+  # The folder with raw input videos.
   cropping_input_folder: 'C:/1. Incoming data/testvids'
   # The folder the output csv file will be saved in.
   cropping_output_folder: 'C:/eMLifeOutputs/Preprocessing/Outputs'
   
 get_predictions:
-  # Input folder containing the images to be used for predictions in the subfolders
+  # Input folder containing the images to be used for predictions in the subfolders.
   input_folder: 'ImagesforPrediction'
   # Set stage to be required developmental stage. This must match a subfolder in the input folder 
-  # above
+  # above.
   stage: 2cell
-  # Destination folder where you want the output csv files to be saved
+  # Destination folder where you want the output csv files to be saved.
   output_folder: 'C:/eMLifeOutputs/Results/'

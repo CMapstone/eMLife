@@ -18,7 +18,7 @@ def extract_100th_frame(file, cropping_input_folder):
     img = Image.fromarray(np_im)
     temp_path = 'temp.png'
     img.save(temp_path) 
-
+    
     return file_name, np_im, temp_path
 
 
@@ -67,7 +67,7 @@ def export_coords(circles, iteration_details, circle_params, file_name):
     y_start = circles[0][1]-circle_params['r']
     y_end = circles[0][1]+circle_params['r']
 
-    # Corrections for if circle goes outside of frame
+    # Corrections for if circle goes outside of frame.
     if x_start < 0:
         x_start = 0
         x_end = 2*circle_params['r']
@@ -89,7 +89,7 @@ def export_coords(circles, iteration_details, circle_params, file_name):
 
 def draw_circles(circle_params, img_path):
     """
-    Finds circles that describe the position of a circular object in an image
+    Finds circles that describe the position of a circular object in an image.
     """
     # Read in and prepare image.
     img = cv2.imread(img_path,0) 
@@ -119,10 +119,10 @@ def iter_videos(iteration_details, cropping_input_folder):
     """
     Iterate over every video in the folder, extract co-ordinates for cropping frames centered on 
     the embryo, append these to iteration_details (a list of the cropping coordintes for each 
-    video)
+    video).
     """
     directory = os.fsencode(cropping_input_folder)
-    # Loop through each video in Input videos folder
+    # Loop through each video in Input videos folder.
     for file in os.listdir(directory):
         
         # Extract the 100th frame, we will assume the embryo position in this frame will be 
@@ -138,7 +138,7 @@ def iter_videos(iteration_details, cropping_input_folder):
         # If above was successful write co-ordinates for cropping to iteration_details array.
         if circles is not None:
             export_coords(circles, iteration_details, circle_params, file_name)
-        # If unsuccessful write 'failed' to iteration_details array
+        # If unsuccessful write 'failed' to iteration_details array.
         else:
             iteration_details.append([file_name, 'failed', 'failed', 'failed', 'failed'])
         
@@ -149,20 +149,20 @@ def find_cropping_coords_main(config):
     """
     Finds co-ordinates for cropping images centered on the embryo for every video in the input 
     folder. These co-ordinates are exported to an output CSV that can be used (after manual 
-    checking step) by ExtractFrames.py
+    checking step) by ExtractFrames.py.
     """
     # Set directory as input folder in config file
     cropping_input_folder = config['find_cropping_coords']['cropping_input_folder']
     cropping_output_folder = config['find_cropping_coords']['cropping_output_folder']
 
-    # Create array to store coordinates in for each video
-    # List of lists to allow for more lists to be appended
+    # Create array to store coordinates in for each video.
+    # List of lists to allow for more lists to be appended.
     iteration_details = [['Video name', 'Yend', 'Ystart', 'Xend', 'Xstart']]
 
-    # Loop through each video in Input videos folder
+    # Loop through each video in Input videos folder.
     iteration_details = iter_videos(iteration_details, cropping_input_folder)
             
-    #Export iteration_details array to csv
+    #Export iteration_details array to csv.
     array_to_csv(cropping_output_folder+'/croppingcoords.csv', iteration_details)
     
     return
