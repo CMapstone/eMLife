@@ -33,8 +33,8 @@ if __name__=='__main__':
     config = read_config()
     # Set the tasks you want to run to 'True' and leave the others as 'False'
     find_cropping_coords = False
-    extract_frames = False
-    get_predictions= True
+    extract_frames = True
+    get_predictions= False
 
     run_main(extract_frames, get_predictions, find_cropping_coords, config)
 

@@ -8,42 +8,46 @@ import numpy as np
 from tensorflow.keras.models import load_model
 
 
-def create_output_subfolders(output_folder, stage, offset):
+def create_output_subfolders(config_dict):
     """
     Check whether subfolders for the output images exist, if not then create the subfolders.
     """
-    if not os.path.exists(output_folder+stage):
-        os.makedirs(output_folder+stage)
-        for i in offset:
-            os.makedirs(output_folder+stage+'/'+str(i))
+    if not os.path.exists(config_dict['output_folder']+config_dict['stage']):
+        os.makedirs(config_dict['output_folder']+config_dict['stage'])
+        for i in config_dict['offset']:
+            os.makedirs(config_dict['output_folder']+config_dict['stage']+'/'+str(i))
     
     return
 
 
-def read_in_annotations(annotations, cropping, stage):
+def read_in_annotations(config_dict):
     """
     Read frame numbers and cropping coordinates into dictionaries from annotations csv file.
     """
-    # create dictionaries for reference frame number, x start, y start, x end, y end. 
-    ref_frame = {}
-    x_start = {}
-    x_end = {}
-    y_start = {}
-    y_end = {}
+    # Create a dictionary of dictionaries for reference frame number, x start, y start, x end, 
+    # y end. 
+    frames_dict = {
+    'ref_frame' : {},
+    'x_start' : {},
+    'x_end' : {},
+    'y_start' : {},
+    'y_end' : {},
+    }
+    
     # Read in annotations csv.
-    sh = pd.read_csv(annotations)
+    sh = pd.read_csv(config_dict['annotations'])
     # Iterate over each embryo, adding reference frame and coordinates to dictionaries with video
     # name as key.
     for i in range(0,len(sh)):
         cell_value_class = sh['video name'][i]
-        ref_frame[cell_value_class] = sh[stage][i] 
-        if cropping == 'Y':
-            x_start[cell_value_class] = sh['Xstart'][i] 
-            x_end[cell_value_class] = sh['Xend'][i] 
-            y_start[cell_value_class] = sh['Ystart'][i] 
-            y_end[cell_value_class] = sh['Yend'][i] 
+        frames_dict['ref_frame'][cell_value_class] = sh[config_dict['stage']][i] 
+        if config_dict['cropping'] == 'Y':
+            frames_dict['x_start'][cell_value_class] = sh['Xstart'][i] 
+            frames_dict['x_end'][cell_value_class] = sh['Xend'][i] 
+            frames_dict['y_start'][cell_value_class] = sh['Ystart'][i] 
+            frames_dict['y_end'][cell_value_class] = sh['Yend'][i] 
     
-    return ref_frame, x_start, y_start, x_end, y_end
+    return frames_dict
 
 
 def calculate_key_moment_time(input_folder, file_name, frame_num, model):
@@ -171,27 +175,28 @@ def find_offset_going_backward(time_of_frame, time_wanted, frame_num, cap, model
     return cap, frame_num
 
 
-def save_frame(cap, frame_num, cropping, output_folder, stage, i, file_name, x_start, x_end, y_start, y_end):
+def save_frame(cap, frame_num, config_dict, i, file_name, frames_dict):
     """
     Save the frame as a png to the correct output folder.
     """
     ret, frame = cap.read() 
     np_im = np. array(frame)
-    if cropping == 'Y':
-        img = Image.fromarray(np_im[int(y_start[file_name]):int(y_end[file_name]),int(x_start[file_name]):int(x_end[file_name])])
-    if cropping == 'N':
+    if config_dict['cropping'] == 'Y':
+        img = Image.fromarray(np_im[int(frames_dict['y_start'][file_name]):int(frames_dict['y_end'][file_name])
+                                    ,int(frames_dict['x_start'][file_name]):int(frames_dict['x_end'][file_name])])
+    if config_dict['cropping'] == 'N':
         img = Image.fromarray(np_im)
-    img.save(output_folder+stage+'/'+str(i)+"/"+str(file_name)+'_'+str(frame_num)+ '.png') 
+    img.save(config_dict['output_folder']+config_dict['stage']+'/'+str(i)+"/"+str(file_name)+'_'+str(frame_num)+ '.png') 
 
     return
 
 
-def iter_offsets(cap, frame_num, offset, key_event_time, time_of_frame, model, cropping, output_folder, stage, file_name, x_start, x_end, y_start, y_end):
+def iter_offsets(cap, frame_num, config_dict, key_event_time, time_of_frame, model, file_name, frames_dict):
     """
     Iterate through every desired timepoint offset from the reference timepoint and save an image 
     at each timepoint.
     """
-    for i in offset:
+    for i in config_dict['offset']:
 
         # Calculate the time that should be showing on the timestamp for this offset.
         time_wanted = key_event_time+i  
@@ -205,29 +210,30 @@ def iter_offsets(cap, frame_num, offset, key_event_time, time_of_frame, model, c
             cap, frame_num = find_offset_going_backward(time_of_frame, time_wanted, frame_num, cap, model)
                     
         # Save frame as image.
-        save_frame(cap, frame_num, cropping, output_folder, stage, i, file_name, x_start, x_end, y_start, y_end)
+        save_frame(cap, frame_num, config_dict, i, file_name, frames_dict)
 
     return
 
 
-def iter_embryos(input_folder, model, stage, offset, cropping, output_folder, ref_frame, x_start, x_end, y_start, y_end):
+def iter_embryos(model, config_dict, frames_dict):
     """
     Iterate through every embryo in the dataset to extract frames at all the desired offsets from 
     the reference point.
     """
-    for file in os.listdir(os.fsencode(input_folder)):
+    for file in os.listdir(os.fsencode(config_dict['input_folder'])):
         file_name = os.fsdecode(file)
-        frame_num = ref_frame[file_name] 
+        frame_num = frames_dict['ref_frame'][file_name] 
 
         # Check frame number is non zero as when the key timepoint could not be determined a zero 
         # is entered into the csv.
         if int(frame_num)>0:  
             
             # Get the time of the key moment frame.
-            key_event_time, time_of_frame, cap = calculate_key_moment_time(input_folder, file_name, frame_num, model)
+            key_event_time, time_of_frame, cap = calculate_key_moment_time(config_dict['input_folder'],
+                                                                            file_name, frame_num, model)
 
             # Iterate through all offsets.
-            iter_offsets(cap, frame_num, offset, key_event_time, time_of_frame, model, cropping, output_folder, stage, file_name, x_start, x_end, y_start, y_end)
+            iter_offsets(cap, frame_num, config_dict, key_event_time, time_of_frame, model, file_name, frames_dict)
             
     return
 
@@ -238,12 +244,14 @@ def extract_frames_main(config):
     of embryo timelapse videos.
     """
     # Read in all input data, output location, and user defined variables from config file.
-    stage = config['extract_frames']['stage']
-    annotations = config['extract_frames']['annotations']
-    offset = config['extract_frames']['offset']
-    cropping = config['extract_frames']['cropping']
-    input_folder = config['extract_frames']['input_folder']
-    output_folder = config['extract_frames']['output_folder']
+    config_dict = {
+    'stage' : config['extract_frames']['stage'],
+    'annotations' : config['extract_frames']['annotations'],
+    'offset' : config['extract_frames']['offset'],
+    'cropping' : config['extract_frames']['cropping'],
+    'input_folder' : config['extract_frames']['input_folder'],
+    'output_folder' : config['extract_frames']['output_folder']
+    }
 
     # Load the model we have trained to read the timestamp. It should work for EmbryoScope and
     # Embryoscope plus videos, another model may need to be trained for videos from other 
@@ -251,13 +259,13 @@ def extract_frames_main(config):
     model = load_model("Preprocessing/dig2.h5")
 
     # Extract information from Annotations csv.
-    annotations, x_start, y_start, x_end, y_end = read_in_annotations(annotations, cropping, stage)
+    frames_dict = read_in_annotations(config_dict)
 
     # Create subfolders for the output images.
-    create_output_subfolders(output_folder, stage, offset)
+    create_output_subfolders(config_dict)
 
     # Loop through every video in the input folder extracting all the required frames for this 
     # stage and save them in the output folder.
-    iter_embryos(input_folder, model, stage, offset, cropping, output_folder, annotations, x_start, x_end, y_start, y_end)
+    iter_embryos(model, config_dict, frames_dict)
     
     return
