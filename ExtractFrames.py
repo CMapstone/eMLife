@@ -32,7 +32,8 @@ def read_in_annotations(annotations, cropping, stage):
     y_end = {}
     # Read in annotations csv
     sh = pd.read_csv(annotations)
-    # Iterate over each embryo, adding reference frame and coordinates to dictionaries with video name as key.
+    # Iterate over each embryo, adding reference frame and coordinates to dictionaries with video
+    # name as key.
     for i in range(0,len(sh)):
         cell_value_class = sh['video name'][i]
         ref_frame[cell_value_class] = sh[stage][i] 
@@ -61,16 +62,17 @@ def calculate_key_moment_time(input_folder, file_name, frame_num, model):
 def read_digit(digit_coords, img_size, frame, model):
     """
     Read the digit in a passed patch of an image using a pre-trained CNN.
-    This may need modifying if you are using a timelapse system other than the EmbryoScope or EmbryoScope plus
+    This may need modifying if you are using a timelapse system other than the EmbryoScope or 
+    EmbryoScope plus
     """
     digit = frame[digit_coords[0]:digit_coords[1],digit_coords[2]:digit_coords[3]] 
     digit = Image.fromarray(digit)
     digit = digit.resize((img_size, img_size, ))
     digit = digit.convert('L')
     digit = np. array(digit)
-    # Only use model to prediction digit value if there is a digit in the patch (determined by value of corner pixel 
-    # that will always have a value greater than 100 if there is a digit present). This step will have to be checked 
-    # if using a different timelapse system.
+    # Only use model to prediction digit value if there is a digit in the patch (determined by 
+    # value of corner pixel that will always have a value greater than 100 if there is a digit 
+    # present). This step will have to be checked if using a different timelapse system.
     if digit[0,0]>100:
         digit = digit.reshape(1, img_size, img_size, 1)
         digit = digit/ 255
@@ -84,13 +86,14 @@ def read_digit(digit_coords, img_size, frame, model):
 
 def get_time(frame, model):
     """
-    This function reads the timestamp. It should work for EmbryoScope and Embryoscope 
-    plus videos, it will need to be adjusted for videos from other timelapse systems.
+    This function reads the timestamp. It should work for EmbryoScope and Embryoscope plus videos,
+    it will need to be adjusted for videos from other timelapse systems.
     """
     img_size = 28
     
-    # The coordinates of the timestamp vary depending on whether the frame is from an Embryoscope or EmbryoScope plus video
-    # EmbryoScope videos are 500x500 , EmbryoscopePlus videos are 800x800 pixels
+    # The coordinates of the timestamp vary depending on whether the frame is from an Embryoscope 
+    # or EmbryoScope plus video EmbryoScope videos are 500x500 , EmbryoscopePlus videos are 800x800
+    # pixels
     if len(frame) == 500:
 
         digit_coords = [478, 487, 449, 456]
@@ -120,7 +123,8 @@ def get_time(frame, model):
        
 def find_offset_going_forward(time_of_frame, time_wanted, frame_num, cap, model):
     """
-    Iterate over each frame, going forward in time, until the frame with the correct timestamp is found.
+    Iterate over each frame, going forward in time, until the frame with the correct timestamp is
+    found.
     """
     while time_of_frame< time_wanted:
         frame_num = int(frame_num)+1
@@ -144,7 +148,8 @@ def find_offset_going_forward(time_of_frame, time_wanted, frame_num, cap, model)
 
 def find_offset_going_backward(time_of_frame, time_wanted, frame_num, cap, model):
     """
-    Iterate over each frame, going backwards in time, until the frame with the correct timestamp is found.
+    Iterate over each frame, going backwards in time, until the frame with the correct timestamp 
+    is found.
     """
     while time_of_frame > time_wanted:
         # Extract the frame with number frame_num.
@@ -183,18 +188,19 @@ def save_frame(cap, frame_num, cropping, output_folder, stage, i, file_name, x_s
 
 def iter_offsets(cap, frame_num, offset, key_event_time, time_of_frame, model, cropping, output_folder, stage, file_name, x_start, x_end, y_start, y_end):
     """
-    Iterate through every desired timepoint offset from the reference timepoint and save an image at each timepoint.
+    Iterate through every desired timepoint offset from the reference timepoint and save an image 
+    at each timepoint.
     """
     for i in offset:
 
         # Calculate the time that should be showing on the timestamp for this offset.
         time_wanted = key_event_time+i  
 
-        if i>0:
+        if i > 0:
         # Find the first frame after the offset time 
             cap, frame_num = find_offset_going_forward(time_of_frame, time_wanted, frame_num, cap, model)
                 
-        if i<0:
+        if i < 0:
             # Find the first frame before the offset time 
             cap, frame_num = find_offset_going_backward(time_of_frame, time_wanted, frame_num, cap, model)
                     
@@ -204,29 +210,32 @@ def iter_offsets(cap, frame_num, offset, key_event_time, time_of_frame, model, c
     return
 
 
-def iter_embryos(inputfolder, model, stage, offset, cropping, outputfolder, ref_frame, x_start, x_end, y_start, y_end):
+def iter_embryos(input_folder, model, stage, offset, cropping, output_folder, ref_frame, x_start, x_end, y_start, y_end):
     """
-    Iterate through every embryo in the dataset to extract frames at all the desired offsets from the reference point.
+    Iterate through every embryo in the dataset to extract frames at all the desired offsets from 
+    the reference point.
     """
-    for file in os.listdir(os.fsencode(inputfolder)):
-        filename = os.fsdecode(file)
-        frameNum = ref_frame[filename] 
+    for file in os.listdir(os.fsencode(input_folder)):
+        file_name = os.fsdecode(file)
+        frame_num = ref_frame[file_name] 
 
-        #check frame number is non zero as when the key timepoint could not be determined a zero is entered into the csv.
-        if int(frameNum)>0:  
+        # Check frame number is non zero as when the key timepoint could not be determined a zero 
+        # is entered into the csv.
+        if int(frame_num)>0:  
             
             # Get the time of the key moment frame
-            keyeventtime, time_of_frame, cap = calculate_key_moment_time(inputfolder, filename, frameNum, model)
+            key_event_time, time_of_frame, cap = calculate_key_moment_time(input_folder, file_name, frame_num, model)
 
             # Iterate through all offsets
-            iter_offsets(cap, frameNum, offset, keyeventtime, time_of_frame, model, cropping,outputfolder, stage, filename, x_start, x_end, y_start, y_end)
+            iter_offsets(cap, frame_num, offset, key_event_time, time_of_frame, model, cropping, output_folder, stage, file_name, x_start, x_end, y_start, y_end)
             
     return
 
 
 def extract_frames_main(config):
     """
-    Extract frames as png files for all desired offsets from a reference time point for a dataset of embryo timelapse videos.
+    Extract frames as png files for all desired offsets from a reference time point for a dataset 
+    of embryo timelapse videos.
     """
     # Read in all input data, output location, and user defined variables from config file.
     stage = config['extract_frames']['stage']
@@ -236,7 +245,9 @@ def extract_frames_main(config):
     input_folder = config['extract_frames']['input_folder']
     output_folder = config['extract_frames']['output_folder']
 
-    # Load the model we have trained to read the timestamp. It should work for EmbryoScope and Embryoscope plus videos, another model may need to be trained for videos from other timelapse systems
+    # Load the model we have trained to read the timestamp. It should work for EmbryoScope and
+    # Embryoscope plus videos, another model may need to be trained for videos from other 
+    # timelapse systems
     model = load_model("Preprocessing/dig2.h5")
 
     # Extract information from Annotations csv
@@ -245,7 +256,8 @@ def extract_frames_main(config):
     # Create subfolders for the output images.
     create_output_subfolders(output_folder, stage, offset)
 
-    # Loop through every video in the input folder extracting all the required frames for this stage and save them in the output folder.
+    # Loop through every video in the input folder extracting all the required frames for this 
+    # stage and save them in the output folder.
     iter_embryos(input_folder, model, stage, offset, cropping, output_folder, annotations, x_start, x_end, y_start, y_end)
     
     return

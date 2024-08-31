@@ -5,7 +5,6 @@ import os
 import csv
 import math
 
-#TODO save to memory instead of disk
 
 def extract_100th_frame(file, cropping_input_folder):
     """
@@ -25,9 +24,10 @@ def extract_100th_frame(file, cropping_input_folder):
 
 def get_circle_params(np_im):
     """
-    Parameters for cropping algorithm are set depending on whether video is EmbryoScope (500x500) or EmbryoScopePlus (800x800)
-    a-e are cv2.HoughCircles parameters, r is half the size of the desired output cropped image based on observed embryo size,
-    edge is size of frame. These parameters will need changing if you are using a different timelapse system.
+    Parameters for cropping algorithm are set depending on whether video is EmbryoScope (500x500) 
+    or EmbryoScopePlus (800x800) a-e are cv2.HoughCircles parameters, r is half the size of the 
+    desired output cropped image based on observed embryo size, edge is size of frame. These 
+    parameters will need changing if you are using a different timelapse system.
     """   
     if len(np_im)>500:
         circle_params = {
@@ -55,12 +55,13 @@ def get_circle_params(np_im):
 
 def export_coords(circles, iteration_details, circle_params, file_name):
     """
-    Extract embryo centre co-ordinates from circles and then use these to work out the coordinates for cropping the embryo
-    Corrections are made for if the embryo is close to the edge of the image
-    The coordinates are then added to the list of cropping coordinates for each video (iteration_details) 
+    Extract embryo centre co-ordinates from circles and then use these to work out the coordinates
+    for cropping the embryo corrections are made for if the embryo is close to the edge of the 
+    image. The coordinates are then added to the list of cropping coordinates for each video 
+    (iteration_details). 
     """
-    # Calculate the start and end x and y co-ordinates by adding or subtracting half the desired cropped image width to the embryo 
-    # centre coordinates
+    # Calculate the start and end x and y co-ordinates by adding or subtracting half the desired 
+    # cropped image width to the embryo centre coordinates.
     x_start = circles[0][0]-circle_params['r']
     x_end = circles[0][0]+circle_params['r']
     y_start = circles[0][1]-circle_params['r']
@@ -92,11 +93,12 @@ def draw_circles(circle_params, img_path):
     """
     # Read in and prepare image.
     img = cv2.imread(img_path,0) 
+    os.remove(img_path)
     img = cv2.medianBlur(img,5)
     # Find the embryo position.
     circles = cv2.HoughCircles(img,cv2.HOUGH_GRADIENT,1,circle_params['a'],
-                            param1=circle_params['b'], param2=circle_params['c'], minRadius=circle_params['d'],
-                            maxRadius=circle_params['e'])
+                            param1=circle_params['b'], param2=circle_params['c'], 
+                            minRadius=circle_params['d'],maxRadius=circle_params['e'])
     circles = np.round(circles[0, :]).astype("int")
         
     return circles
@@ -115,14 +117,16 @@ def array_to_csv(csv_path, array_name):
 
 def iter_videos(iteration_details, cropping_input_folder):
     """
-    Iterate over every video in the folder, extract co-ordinates for cropping frames centered on the embryo, append these 
-    to iteration_details (a list of the cropping coordintes for each video)
+    Iterate over every video in the folder, extract co-ordinates for cropping frames centered on 
+    the embryo, append these to iteration_details (a list of the cropping coordintes for each 
+    video)
     """
     directory = os.fsencode(cropping_input_folder)
     # Loop through each video in Input videos folder
     for file in os.listdir(directory):
         
-        # Extract the 100th frame, we will assume the embryo position in this frame will be representative of the whole video.
+        # Extract the 100th frame, we will assume the embryo position in this frame will be 
+        # representative of the whole video.
         file_name, np_im,temp_path = extract_100th_frame(file, cropping_input_folder)
 
         # Get the parameters used for cropping depending on size of frame.
@@ -143,8 +147,9 @@ def iter_videos(iteration_details, cropping_input_folder):
 
 def find_cropping_coords_main(config):
     """
-    Finds co-ordinates for cropping images centered on the embryo for every video in the input folder
-    These co-ordinates are exported to an output CSV that can be used (after manual checking step) by ExtractFrames.py
+    Finds co-ordinates for cropping images centered on the embryo for every video in the input 
+    folder. These co-ordinates are exported to an output CSV that can be used (after manual 
+    checking step) by ExtractFrames.py
     """
     # Set directory as input folder in config file
     cropping_input_folder = config['find_cropping_coords']['cropping_input_folder']

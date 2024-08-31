@@ -9,10 +9,12 @@ import csv
 
 def PrepareDataForModel(images_in, stage):
     """
-    Uses MobileNetV2 and in some cases also a previously trained transfer model to prepare high level features to be used as inputs 
-    to the outcome predictor models. The extra transfer learning step was found to be useful for the PN and 4 cell stages.
+    Uses MobileNetV2 and in some cases also a previously trained transfer model to prepare high
+    level features to be used as inputs to the outcome predictor models. The extra transfer 
+    learning step was found to be useful for the PN and 4 cell stages.
     """
-    # Build a model that extracts high level features to represent an image using the keras MobileNetV2 model. 
+    # Build a model that extracts high level features to represent an image using the keras 
+    # MobileNetV2 model. 
     mobile =  tf.keras.applications.MobileNetV2()    
     x = mobile.layers[-2].output
     model = Model(inputs = mobile.input, outputs = x)
@@ -20,7 +22,8 @@ def PrepareDataForModel(images_in, stage):
     convx = model.predict(images_in)
     features = convx
 
-    # Get further high level features from transfer model if stage is PN or 4 cell (the stages this was shown to be useful for).
+    # Get further high level features from transfer model if stage is PN or 4 cell (the stages
+    # this was shown to be useful for).
     if stage == 'PN' or stage == '4cell':
         TransferModel = 'transfermodel/model640.h5'
         topmodel = load_model(TransferModel)
@@ -34,7 +37,8 @@ def PrepareDataForModel(images_in, stage):
 
 def predict_all_scores(features, stage):
     """
-    Get a prediction of live birth for each image using each of the 50 provided models for this developmental stage
+    Get a prediction of live birth for each image using each of the 50 provided models for this 
+    developmental stage
     """
     base_folder  ='Models/'+stage
     directory = os.fsencode(base_folder)
@@ -66,7 +70,8 @@ def calculate_average_scores(images_in, features, all_scores_array):
         # Iterate over every model score to get sum of all scores
         for mod in range(0, 50):
             tot = tot+all_scores_array[mod][emb]
-        # Find average score by diving total by number of models (50), and then add this to a list of average scores
+        # Find average score by diving total by number of models (50), and then add this to a list 
+        # of average scores
         average_score.append([images_in.filenames[emb], (tot/50)])
     
     return average_score
@@ -85,8 +90,9 @@ def save_as_csv(output_folder, stage, average_score):
 
 def getting_predictions_main(config):
     """
-    Predict likelihood of live birth after IVF transfer for every embryo image in a folder and export predictions to a csv.
-    The developmental stage of the embryos should be specified so models trained on the correct stage are used.
+    Predict likelihood of live birth after IVF transfer for every embryo image in a folder and 
+    export predictions to a csv. The developmental stage of the embryos should be specified so
+    models trained on the correct stage are used.
     """
     # Read in input folder, output folder, and developmental stage from config folder
     stage = config['get_predictions']['stage']
@@ -97,10 +103,12 @@ def getting_predictions_main(config):
     images_in = ImageDataGenerator(preprocessing_function = tf.keras.applications.mobilenet.preprocess_input) \
             .flow_from_directory(directory = input_folder, target_size = (224,224), classes = [stage],batch_size = 10,shuffle = False )
 
-    # Convert images to comvolutional features (the format required for the live birth prediction models) using the PrepareDataForModel
+    # Convert images to comvolutional features (the format required for the live birth prediction
+    # models) using the PrepareDataForModel
     features = PrepareDataForModel(images_in, stage)
         
-    # Run all live birth prediction models on each image and record all scores. Produces a 2d array, each row is all the embryo scores for each model
+    # Run all live birth prediction models on each image and record all scores. Produces a 2d 
+    # array, each row is all the embryo scores for each model
     all_scores_array = predict_all_scores(features, stage)
         
     # Calculate the average score for each embryo by averaging over the columns in the array
